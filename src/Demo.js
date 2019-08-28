@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import axios from "axios";
 import "./demo.css"
 
 class Demo extends Component {
@@ -14,8 +15,24 @@ class Demo extends Component {
                 {id: 5, value: "6"}
             ],
             sourceIndex: null,
+            name: 123
         }
     }
+
+    componentDidMount() {
+        this.getData();
+    }
+
+    getData = () => {
+        /*fetch(`${window.location.origin}/manifest.json`).then(res => res.json()).then(response => {
+            this.setState({name: response.name});
+        })*/
+        axios.get(`${window.location.origin}/manifest.json`).then(res=>{
+            return res.data;
+        }).then(response => {
+            this.setState({name: response.name});
+        })
+    };
 
     dragStart = (e, sourceIndex) => {
         this.setState({
@@ -41,7 +58,7 @@ class Demo extends Component {
     };
 
     render() {
-        const {list} = this.state;
+        const {list, name} = this.state;
         return (
             <div>
                 <ul>
@@ -57,6 +74,7 @@ class Demo extends Component {
                         })
                     }
                 </ul>
+                <div>{name}</div>
             </div>
         )
     }
