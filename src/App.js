@@ -8,8 +8,10 @@ import ShcMain from "./containers/ShcMain";
 import history from './history'
 import WebIM from "./config/WebIM";
 import config from "./config/config";
+import {useDispatch} from "react-redux";
 
 function App() {
+    const dispatch = useDispatch();
 
     useEffect(()=>{
         let conn = {};
@@ -39,7 +41,11 @@ function App() {
             },
             onClosed: function ( message ) {},         //连接关闭回调
             onTextMessage: function ( message ) {
-                console.log(message);
+                console.log(`收到消息`+new Date().getMonth() + ':' + new Date().getMinutes(),message);
+                dispatch({
+                    type:'ADD_MESSAGE',
+                    data:message
+                })
             },    //收到文本消息
             onEmojiMessage: function ( message ) {},   //收到表情消息
             onPictureMessage: function ( message ) {}, //收到图片消息
@@ -72,9 +78,11 @@ function App() {
             onError: function ( message ) {},          //失败回调
             onBlacklistUpdate: function (list) {       //黑名单变动
                 // 查询黑名单，将好友拉黑，将好友从黑名单移除都会回调这个函数，list则是黑名单现有的所有好友信息
-                console.log(list);
+
             },
-            onReceivedMessage: function(message){},    //收到消息送达服务器回执
+            onReceivedMessage: function(message){
+
+            },    //收到消息送达服务器回执
             onDeliveredMessage: function(message){},   //收到消息送达客户端回执
             onReadMessage: function(message){},        //收到消息已读回执
             onCreateGroup: function(message){},        //创建群组成功回执（需调用createGroupNew）

@@ -21,8 +21,11 @@ export default function chat(state = fromJS({
 }), action) {
     const {type, data} = action;
     switch (type) {
-        case 'ADD_MESSAGE':
+        case 'GET_HISTORY_MESSAGE':
             return state.set('messageList', fromJS(data));
+        case 'ADD_MESSAGE':
+            let messageListNew=state.get('messageList').push(fromJS(data));
+            return state.set('messageList',messageListNew);
         case 'LOGIN_SUCCESS':
             let loginState = state;
             loginState = loginState.set('username', data.username);
@@ -33,7 +36,7 @@ export default function chat(state = fromJS({
         case 'QUERY_GROUP_LIST':
             let groupState = state;
             groupState = groupState.set('groupList', fromJS(data));
-            groupState = groupState.set('groupInfo', fromJS(data[0]));
+            groupState = groupState.set('groupInfo', fromJS(data[0]||{}));
             return groupState;
         default:
             return state;

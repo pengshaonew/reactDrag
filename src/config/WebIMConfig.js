@@ -51,7 +51,7 @@ var config = {
     /*
      * Application AppKey
      */
-    appkey: 'easemob-demo#chatdemoui',
+    appkey: '1126191122168851#mantis-hc-im',
     /*
      * Application Host
      */

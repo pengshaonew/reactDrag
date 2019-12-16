@@ -13,6 +13,7 @@ let Chat = () => {
     const groupInfo = thisState.get('groupInfo');
 
     const [value, setValue] = useState('');
+    const [friendValue, setFriendValue] = useState('');
 
     useEffect(() => {
         getGroupList();
@@ -51,7 +52,7 @@ let Chat = () => {
             success: function (respData) {
                 dispatch({
                     type: 'QUERY_GROUP_INFO',
-                    data: respData
+                    data: respData.data
                 })
             },
             error: function () {
@@ -68,8 +69,18 @@ let Chat = () => {
             to: groupId,                     // 接收消息对象(群组id)
             roomType: false,                    // 群聊类型，true时为聊天室，false时为群组
             ext: {},                            // 扩展消息
-            success: function () {
-                getHistoryMsg(groupId);
+            success: function (id, serverMsgId) {
+                setValue('');
+                console.log(new Date().getMonth() + ':' + new Date().getMinutes() + '发送成功'+`id：${id}，serverMsgId：${serverMsgId}`);
+                dispatch({
+                    type:'ADD_MESSAGE',
+                    data:{
+                        data: message.msg,
+                        id: 682556906564225096,
+                        to: 101794878390273,
+                        type: "groupchat",
+                    }
+                })
             },                                  // 对成功的相关定义，sdk会将消息id登记到日志进行备份处理
             fail: function () {
 
@@ -95,10 +106,9 @@ let Chat = () => {
             isGroup: true,
             count: 100,
             success: function (res) {
-                console.log(res);
                 if (res.length) {
                     dispatch({
-                        type: 'ADD_MESSAGE',
+                        type: 'GET_HISTORY_MESSAGE',
                         data: res
                     })
                 }
@@ -113,23 +123,56 @@ let Chat = () => {
         setValue(e.target.value);
     };
 
+
     let handleSend = () => {
-        sendTxtMessage({msg: value}, groupList.getIn([0, 'groupid']));
+        value && sendTxtMessage({msg: value}, groupInfo.get('groupid'));
     };
 
+    let changeFriend = e => {
+        setFriendValue(e.target.value)
+    };
+
+    let handleAddFriend = () => {
+        friendValue && WebIM.conn.subscribe({
+            to: friendValue,
+            message: '加个好友呗!'
+        });
+    };
+
+    // 加好友入群
+    let addGroupMembers = function () {
+        let option = {
+            users: [friendValue],
+            groupId: groupInfo.get('groupid')
+        };
+        WebIM.conn.inviteToGroup(option);
+    };
+
+    let revocation = record => {
+        WebIM.conn.recallMessage({
+            mid:record.id,
+            to:record.to,
+            type:'groupchat'
+        })
+    };
     return (
         <div>
-            <div>
-                {
-                    messageList.map((item, index) => {
-                        return <div key={index}>{item.get('data')}</div>
-                    })
-                }
-            </div>
             <div className="footer">
                 <Input type="text" value={value} onChange={changeMsg}
                        onPressEnter={handleSend}/>
                 <button className="send" onClick={handleSend}>send</button>
+                {/*<button className="send" onClick={createGroup}>创建群组</button>*/}
+            </div>
+            {/*<h3>添加好友</h3>
+            <Input type="text" value={friendValue} onChange={changeFriend}
+                   onPressEnter={addGroupMembers}/>
+            <button className="send" onClick={addGroupMembers}>加好友入群</button>*/}
+            <div>
+                {
+                    (messageList.reverse()).map((item, index) => {
+                        return <div key={index} onClick={() => revocation(item.toJS())}>{item.get('data')}</div>
+                    })
+                }
             </div>
         </div>
     )
