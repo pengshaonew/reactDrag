@@ -41,14 +41,21 @@ function App() {
             },
             onClosed: function ( message ) {},         //连接关闭回调
             onTextMessage: function ( message ) {
-                console.log(`收到消息`+new Date().getMonth() + ':' + new Date().getMinutes(),message);
+                console.log(`收到文本消息`+new Date().getMonth() + ':' + new Date().getMinutes(),message);
                 dispatch({
                     type:'ADD_MESSAGE',
                     data:message
                 })
             },    //收到文本消息
             onEmojiMessage: function ( message ) {},   //收到表情消息
-            onPictureMessage: function ( message ) {}, //收到图片消息
+            onPictureMessage: function ( message ) {
+                console.log(`收到图片消息` + new Date().getMonth() + ':' + new Date().getMinutes(), message);
+                message.msgType = 'img';
+                dispatch({
+                    type:'ADD_MESSAGE',
+                    data:message
+                })
+            }, //收到图片消息
             onCmdMessage: function ( message ) {},     //收到命令消息
             onAudioMessage: function ( message ) {},   //收到音频消息
             onLocationMessage: function ( message ) {},//收到位置消息
@@ -95,6 +102,7 @@ function App() {
           <div style={{ height: '100%', width: '100%' }}>
               <Route exact path="/" component={Login} />
               <Route path="/chat" component={Chat} />
+              <Route path="/demo" component={Demo} />
           </div>
       </Router>
   );

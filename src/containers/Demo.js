@@ -101,16 +101,6 @@ class Demo extends Component {
                     let formData = new FormData();
                     formData.append('file', blob);
 
-                    axios({
-                        method: 'POST',
-                        headers: { 'content-type': 'application/x-www-form-urlencoded' },
-                        data: formData,
-                        url:`http://mspmsp.bjmantis.net/msp-war/trans/uploadVoice.do?appKey=`,
-                    }).then(res=>{
-                        return res.data;
-                    }).then(response => {
-                        this.setState({name: response.name});
-                    })
                 }, function (msg) {
                     console.log("录音失败:" + msg);
                 });
