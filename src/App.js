@@ -37,6 +37,7 @@ function App() {
                 // 如果isAutoLogin设置为false，那么必须手动设置上线，否则无法收消息
                 // 手动上线指的是调用conn.setPresence(); 如果conn初始化时已将isAutoLogin设置为true
                 // 则无需调用conn.setPresence();
+                console.log('连接成功回调');
                 history.push('/chat')
             },
             onClosed: function ( message ) {},         //连接关闭回调
@@ -57,7 +58,14 @@ function App() {
                 })
             }, //收到图片消息
             onCmdMessage: function ( message ) {},     //收到命令消息
-            onAudioMessage: function ( message ) {},   //收到音频消息
+            onAudioMessage: function ( message ) {
+                console.log('收到音频消息',message);
+                message.msgType = 'audio';
+                dispatch({
+                    type:'ADD_MESSAGE',
+                    data:message
+                })
+            },   //收到音频消息
             onLocationMessage: function ( message ) {},//收到位置消息
             onFileMessage: function ( message ) {},    //收到文件消息
             onVideoMessage: function (message) {

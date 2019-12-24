@@ -12,18 +12,17 @@
 // }
 
 function getUrl(){
-    var apiUrl = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//a1-hsb.easemob.com'
+    var apiUrl = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//a1-hsb.easemob.com';
     var xmppUrl = '//im-api.easemob.com/ws'
     if(window.location.href.indexOf('webim-h5.easemob.com') !== -1 ){
-        apiUrl = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//a1.easemob.com'
+        apiUrl = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//a1.easemob.com';
         xmppUrl = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//im-api-v2.easemob.com/ws'
     }
     else if(window.location.href.indexOf('webim-hsb-ly.easemob.com') !== -1){
-        apiUrl = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//a1-hsb.easemob.com'
+        apiUrl = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//a1-hsb.easemob.com';
         xmppUrl = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//im-api-v2-hsb.easemob.com/ws'
-    }
-    else if(window.location.href.indexOf('localhost') !== -1){
-        apiUrl = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//a1.easemob.com'
+    }else {
+        apiUrl = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//a1.easemob.com';
         xmppUrl = (window.location.protocol === 'https:' ? 'https:' : 'http:') + '//im-api-v2.easemob.com/ws'
     }
     return {

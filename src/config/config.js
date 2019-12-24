@@ -1,5 +1,5 @@
 
-const _WIDTH = window.screen.availWidth > 350 ? 350 : window.screen.availWidth
+const _WIDTH = window.screen.availWidth > 350 ? 350 : window.screen.availWidth;
 export default {
     // whether auto check media query and dispatch by redux or not ?
     reduxMatchMedia: true,
@@ -23,6 +23,6 @@ export default {
         jpg: 1,
         png: 1
     },
-    
+
     PAGE_NUM: 20
 }

@@ -15,7 +15,7 @@ let Login = () => {
         WebIM.conn.registerUser({
             username: username,
             password: '123123',
-            nickname: username,
+            nickname: `昵称${username}`,
             appKey: WebIM.config.appkey,
             success: function (e) {
                 console.log(e);
@@ -33,6 +33,7 @@ let Login = () => {
             pwd: '123123',
             appKey: WebIM.config.appkey,
             success(token) {
+                console.log(token);
                 dispatch({
                     type: "LOGIN_SUCCESS",
                     data: {
