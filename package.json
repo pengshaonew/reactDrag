@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "antd": "^3.26.2",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "cos-js-sdk-v5": "^0.5.27",
     "easemob-webrtc": "^3.0.7",
     "easemob-websdk": "^3.0.6",
