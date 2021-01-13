@@ -1,6 +1,5 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {shallowEqual, useDispatch, useSelector} from 'react-redux';
-import WebIM from '../config/WebIM'
 import './chat.css'
 import history from '../history'
 import Recorder from 'recorder-core'
@@ -12,251 +11,162 @@ import 'recorder-core/src/engine/mp3-engine'
 //可选的扩展支持项
 import 'recorder-core/src/extensions/waveview'
 import axios from "axios";
+import {Button} from "antd";
+import Login from "./Login";
+import {fromJS} from "immutable";
 
 let Chat = () => {
-
-    const dispatch = useDispatch();
-    const thisState = useSelector(state => state.chat, shallowEqual);
+    const tim = window.tim;
+    const TIM = window.TIM;
     const inputRef = useRef(null);
     const fileRef = useRef(null);
 
-    const messageList = thisState.get('messageList');
-    const groupList = thisState.get('groupList');
-    const groupInfo = thisState.get('groupInfo');
-
-    const [friendValue, setFriendValue] = useState('');
     const [btnText, setBtnText] = useState('按住说话');
     const [rec, setRec] = useState(null);
+    const [curMsg, setCurMsg] = useState(null);
+    const [msgList, setMsgList] = useState([]);
 
     useEffect(() => {
-        getGroupList();
-        recOpen();
+        tim.on(TIM.EVENT.MESSAGE_RECEIVED, receiveMsg);
     }, []);
 
-    useEffect(() => {
-        if (groupInfo.size) {
-            getHistoryMsg(groupInfo.get('groupid'));
+    // 收到推送的单聊、群聊、群提示、群系统通知的新消息，可通过遍历 event.data 获取消息列表数据并渲染到页面
+    let receiveMsg = e => {
+        // event.name - TIM.EVENT.MESSAGE_RECEIVED
+        // event.data - 存储 Message 对象的数组 - [Message]
+        console.log(Date.now(), e.data);
+        if (e.data[0].type === "TIMTextElem") {
+            let msgListNew = msgList.concat(e.data);
+            setMsgList(msgListNew);
         }
-    }, [groupInfo]);
+    };
 
     let getGroupList = () => {
-        let options = {
-            success: function (resp) {
-                dispatch({
-                    type: 'QUERY_GROUP_LIST',
-                    data: resp.data
-                })
-            },
-            error: function (e) {
-            }
-        };
-        WebIM.conn.getGroup(options);
-    };
 
-    let createGroup = () => {
-        let options = {
-            data: {
-                groupname: '测试1群',                    // 群组名
-                desc: '本地测试',                          // 群组描述
-                members: ['zsptest'],            // 用户名组成的数组
-                public: true,                         // pub等于true时，创建为公开群
-                approval: false,                  // approval为true，加群需审批，为false时加群无需审批
-                allowinvites: true
-            },
-            success: function (respData) {
-                dispatch({
-                    type: 'QUERY_GROUP_INFO',
-                    data: respData.data
-                })
-            },
-            error: function () {
-            }
-        };
-        WebIM.conn.createGroupNew(options);
-    };
-
-    let sendTxtMessage = (message = {}, groupId) => {
-        let id = WebIM.conn.getUniqueId();            // 生成本地消息id
-        let msg = new WebIM.message('txt', id); // 创建文本消息
-        let option = {
-            msg: message.msg,             // 消息内容
-            to: groupId,                     // 接收消息对象(群组id)
-            roomType: false,                    // 群聊类型，true时为聊天室，false时为群组
-            ext: {},                            // 扩展消息
-            success: function (id, serverMsgId) {
-                console.log(new Date().getMonth() + ':' + new Date().getMinutes() + '发送成功' + `id：${id}，serverMsgId：${serverMsgId}`);
-                dispatch({
-                    type: 'ADD_MESSAGE',
-                    data: {
-                        data: message.msg,
-                        id: serverMsgId,
-                        to: groupId,
-                        type: "groupchat",
-                    }
-                })
-            },                                  // 对成功的相关定义，sdk会将消息id登记到日志进行备份处理
-            fail: function () {
-
-            }                                   // 对失败的相关定义，sdk会将消息id登记到日志进行备份处理
-        };
-        msg.set(option);
-        msg.setGroup('groupchat');              // 群聊类型
-        WebIM.conn.send(msg.body);
     };
 
     let getHistoryMsg = (groupId) => {
-        /**
-         * 获取对话历史消息
-         * @param {Object} options
-         * @param {String} options.queue   - 对方用户id（如果用户id内含有大写字母请改成小写字母）/群组id/聊天室id
-         * @param {String} options.count   - 每次拉取条数
-         * @param {Boolean} options.isGroup - 是否是群聊，默认为false
-         * @param {Function} options.success
-         * @param {Funciton} options.fail
-         */
-        let options = {
-            queue: groupId,
-            isGroup: true,
-            count: 100,
-            success: function (res) {
-                if (res.length) {
-                    dispatch({
-                        type: 'GET_HISTORY_MESSAGE',
-                        data: res
-                    })
-                }
-            },
-            fail: function () {
-            }
-        };
-        WebIM.conn.fetchHistoryMessages(options);
+
     };
 
-    let handleSend = () => {
-        inputRef.current.innerHTML && sendTxtMessage({msg: inputRef.current.innerHTML}, groupInfo.get('groupid'));
-        inputRef.current.innerHTML = "";
-    };
-
-    let changeFriend = e => {
-        setFriendValue(e.target.value)
-    };
-
-    let handleAddFriend = () => {
-        friendValue && WebIM.conn.subscribe({
-            to: friendValue,
-            message: '加个好友呗!'
+    let handleSend = (message) => {
+        // 2. 发送消息
+        let promise = tim.sendMessage(message);
+        promise.then(function (imResponse) {
+            // 发送成功
+            console.log('消息发送成功', imResponse);
+            setCurMsg(imResponse.data.message);
+        }).catch(function (imError) {
+            // 发送失败
+            console.warn('sendMessage error:', imError);
         });
     };
 
-    // 加好友入群
-    let addGroupMembers = function () {
-        let option = {
-            users: [friendValue],
-            groupId: groupInfo.get('groupid')
+    // 发送文字消息
+    let sendTxtMessage = function () {
+        // 1. 创建消息实例，接口返回的实例可以上屏
+        let message = tim.createTextMessage({
+            to: '1118',
+            conversationType: TIM.TYPES.CONV_GROUP,
+            // 消息优先级，用于群聊（v2.4.2起支持）。如果某个群的消息超过了频率限制，后台会优先下发高优先级的消息，详细请参考：https://cloud.tencent.com/document/product/269/3663#.E6.B6.88.E6.81.AF.E4.BC.98.E5.85.88.E7.BA.A7.E4.B8.8E.E9.A2.91.E7.8E.87.E6.8E.A7.E5.88.B6)
+            // 支持的枚举值：TIM.TYPES.MSG_PRIORITY_HIGH, TIM.TYPES.MSG_PRIORITY_NORMAL（默认）, TIM.TYPES.MSG_PRIORITY_LOW, TIM.TYPES.MSG_PRIORITY_LOWEST
+            // priority: TIM.TYPES.MSG_PRIORITY_NORMAL,
+            payload: {
+                text: inputRef.current.innerHTML
+            }
+        });
+        handleSend(message);
+    };
+
+    //  canvas压缩图片
+    let canvasDrawImg = (url, callback) => {
+        let img = new Image();
+        if (/(probe\.bjmantis\.net)|(mantisfiles\.bjmantis\.net)/.test(url)) {
+            img.setAttribute('crossOrigin', 'Anonymous');
+            img.src = url + '?' + Date.now();
+        } else {
+            img.src = url;
+        }
+        img.onload = function () {
+            // 当图片宽度超过 400px 时, 就压缩成 400px, 高度按比例计算
+            // 压缩质量可以根据实际情况调整
+            // let w = Math.min(100, img.width);
+            // let h = img.height * (w / img.width);
+            let w = img.width;
+            let h = img.height;
+            let canvas = document.createElement('canvas');
+            let ctx = canvas.getContext('2d');
+
+            // 设置 canvas 的宽度和高度
+            canvas.width = w;
+            canvas.height = h;
+
+            // 把图片绘制到 canvas 中
+            ctx.drawImage(img, 0, 0, w, h);
+
+            // 取出 base64 格式数据
+            let dataURL = canvas.toDataURL('image/png');
+            callback && callback(dataURL);
         };
-        WebIM.conn.inviteToGroup(option);
+    };
+
+    // base64转文件对象
+    let dataURLtoFile = (dataurl, filename) => {
+        var arr = dataurl.split(','), mime = arr[0].match(/:(.*?);/)[1],
+            bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new File([u8arr], filename, {type: mime});
+    };
+
+    // 发送快捷图片消息或素材
+    let sendPrivateUrlImg = function () {
+        canvasDrawImg('https://probe.bjmantis.net/msp/front/8888/8888_menu_title_big_logo.png', dataURL => {
+            let file = dataURLtoFile(dataURL, 'logo.png');
+            sendPrivateImg(file);
+        });
+    };
+    // 发送图片消息
+    let sendPrivateImg = function (file) {
+        let message = tim.createImageMessage({
+            to: '1118',
+            conversationType: TIM.TYPES.CONV_GROUP,
+            // 消息优先级，用于群聊（v2.4.2起支持）。如果某个群的消息超过了频率限制，后台会优先下发高优先级的消息，详细请参考 消息优先级与频率控制
+            // 支持的枚举值：TIM.TYPES.MSG_PRIORITY_HIGH, TIM.TYPES.MSG_PRIORITY_NORMAL（默认）, TIM.TYPES.MSG_PRIORITY_LOW, TIM.TYPES.MSG_PRIORITY_LOWEST
+            // priority: TIM.TYPES.MSG_PRIORITY_NORMAL,
+            payload: {
+                file: file,
+            },
+            onProgress: function (event) {
+                console.log('file uploading:', event)
+            }
+        });
+        handleSend(message);
+    };
+    // 发送语音消息
+    let sendAudio = function (fileObj) {
+
     };
 
     // 撤回
-    let revocation = record => {
-        WebIM.conn.recallMessage({
-            mid: record.id,
-            to: record.to,
-            type: 'groupchat'
-        })
-    };
-
-    // 发送图片消息
-    let sendPrivateUrlImg = function () {
-        let id = WebIM.conn.getUniqueId();                   // 生成本地消息id
-        let msg = new WebIM.message('img', id);        // 创建图片消息
-        let file = WebIM.utils.getFileUrl(fileRef.current);      // 将图片转化为二进制文件
-        let allowType = {
-            'jpg': true,
-            'gif': true,
-            'png': true,
-            'bmp': true
-        };
-        if (file.filetype.toLowerCase() in allowType) {
-            let option = {
-                apiUrl: WebIM.config.apiURL,
-                file: file,
-                to: groupInfo.get('groupid'),                       // 接收消息对象
-                roomType: false,
-                chatType: 'chatroom',
-                onFileUploadError: function () {      // 消息上传失败
-                    console.log('onFileUploadError');
-                },
-                onFileUploadComplete: function (res) {   // 消息上传成功
-                    console.log('上传成功', res);
-                    dispatch({
-                        type: 'ADD_MESSAGE',
-                        data: {
-                            data: "",
-                            id: id,
-                            to: groupInfo.get('groupid'),
-                            type: "groupchat",
-                            msgType: 'img',
-                            url: `${res.uri}/${res.entities[0].uuid}`,
-                        }
-                    })
-                },
-                success: function (res) {                // 消息发送成功
-                    console.log('发送群组图片消息成功', res);
-                },
-                fail: function () {
-                    console.log('发送失败');
-                },
-                flashUpload: WebIM.flashUpload
-            };
-            console.log('option',option);
-            msg.set(option);
-            msg.setGroup('groupchat');
-            WebIM.conn.send(msg.body);
-        }
-    };
-
-    // 发送语音消息
-    let sendAudio = function (fileObj) {
-        let id = WebIM.conn.getUniqueId();                   // 生成本地消息id
-        let msg = new WebIM.message('audio', id);        // 创建语音消息
-        let file = WebIM.utils.getFileUrl(fileObj || fileRef.current);      // 将音频转化为二进制文件
-
-        let option = {
-            apiUrl: WebIM.config.apiURL,
-            file: file,
-            to: groupInfo.get('groupid'),                       // 接收消息对象
-            roomType: false,
-            chatType: 'chatroom',
-            onFileUploadError: function () {      // 消息上传失败
-                console.log('onFileUploadError');
-            },
-            onFileUploadComplete: function (res) {   // 消息上传成功
-                console.log('上传成功', res);
-                /*dispatch({
-                    type: 'ADD_MESSAGE',
-                    data: {
-                        data: "",
-                        id: id,
-                        to: groupInfo.get('groupid'),
-                        type: "groupchat",
-                        msgType: 'audio',
-                        url: `${res.uri}/${res.entities[0].uuid}`,
-                    }
-                })*/
-            },
-            success: function (res) {                // 消息发送成功
-                console.log('发送群组音频消息成功', res);
-            },
-            fail: function () {
-                console.log('发送失败');
-            },
-            flashUpload: WebIM.flashUpload
-        };
-        msg.set(option);
-        msg.setGroup('groupchat');
-        console.log(msg.body);
-        WebIM.conn.send(msg.body);
+    let revocation = () => {
+        let message = tim.createCustomMessage({
+            to: '1118',
+            conversationType: TIM.TYPES.CONV_GROUP,
+            // 消息优先级，用于群聊（v2.4.2起支持）。如果某个群的消息超过了频率限制，后台会优先下发高优先级的消息，详细请参考 消息优先级与频率控制
+            // 支持的枚举值：TIM.TYPES.MSG_PRIORITY_HIGH, TIM.TYPES.MSG_PRIORITY_NORMAL（默认）, TIM.TYPES.MSG_PRIORITY_LOW, TIM.TYPES.MSG_PRIORITY_LOWEST
+            // priority: TIM.TYPES.MSG_PRIORITY_HIGH,
+            payload: {
+                data: 'recall',  // recall txt img audio video @
+                description: '撤回',
+                extension: JSON.stringify({
+                    msgId: curMsg.sequence,
+                    content:'',
+                })
+            }
+        });
+        handleSend(message);
     };
 
     let clickImg = (e) => {
@@ -341,19 +251,36 @@ let Chat = () => {
         fileRef.current.click()
     };
 
+    let fileChange = (e) => {
+        sendPrivateImg(e.currentTarget.files[0]);
+    };
+
+    let createGroup = useCallback(() => {
+        tim.createGroup({
+            name: '少鹏测试群3',
+            type: TIM.TYPES.GRP_AVCHATROOM,
+            groupID: '1118'
+        })
+    }, []);
+
     return (
         <div>
+            <Login/>
             <div>
-                <a onClick={() => history.push('/demo')}>demo</a>
+                <a onClick={() => history.push('/login')}>去登录</a>
+                <Button onClick={getGroupList} style={{minWidth: 80, height: 32, marginRight: 10}}
+                        type={'primary'}>获取群组列表</Button>
+                {/*<Button onClick={createGroup} style={{minWidth: 80, height: 32,marginRight:10}} type={'primary'}>创建群组</Button>*/}
             </div>
             <div className="footer">
                 <div ref={inputRef} contentEditable="true" style={{border: '2px solid #ccc', minHeight: 32}}
                      id={'inputChat'}/>
-                <button className="btn" onClick={handleSend}>发送文本</button>
-                <button className="btn" onClick={() => sendAudio()}>发送语音</button>
+                <button className="btn" onClick={sendTxtMessage}>发送文本</button>
+                {/*<button className="btn" onClick={() => sendAudio()}>发送语音</button>*/}
                 <button className="btn" onClick={sendPrivateUrlImg}>发送图片</button>
-                <input type="file" name="filename" ref={fileRef} />
-                <span onClick={openPhoto}>打开文件</span>
+                <button className="btn" onClick={revocation}>撤回</button>
+                <input type="file" name="filename" ref={fileRef} onChange={fileChange}/>
+                {/*<span onClick={openPhoto}>打开文件</span>*/}
                 {/*<button className="send" onClick={createGroup}>创建群组</button>*/}
                 <div
                     onClick={onTouchStart}
@@ -368,42 +295,24 @@ let Chat = () => {
                         alignItems: 'center',
                         justifyContent: 'center',
                         appearance: 'button',
-                        '-webkit-appearance': 'button'
                     }}
                 >{btnText}</div>
                 <button
                     onClick={onTouchEnd}>结束
                 </button>
             </div>
-            {/*<h3>添加好友</h3>
-            <Input type="text" value={friendValue} onChange={changeFriend}
-                   onPressEnter={addGroupMembers}/>
-            <button className="send" onClick={addGroupMembers}>加好友入群</button>*/}
-            <img src="https://www.baidu.com/img/bd_logo1.png" alt="" width={100} onClick={clickImg}/>
+            <img src="https://www.baidu.com/img/bd_logo1.png" alt="" width={100} onClick={clickImg} id='imgDom'/>
             <div style={{borderBottom: '2px solid #333'}}>消息列表</div>
-            <div>
-                {
-                    (messageList.reverse()).map((item, index) => {
-                        switch (item.get('msgType')) {
-                            case 'img':
-                                return (
-                                    <div key={index}>
-                                        <img key={index} src={item.get('url')} alt="" width={80} height={80}/>
-                                    </div>
-                                );
-                            case 'audio':
-                                return (
-                                    <div key={index}>
-                                        <audio key={index} src={item.get('url')} controls={'controls'}>音频</audio>
-                                    </div>
-                                );
-                            default:
-                                return <div key={index} onClick={() => revocation(item.toJS())}
-                                            dangerouslySetInnerHTML={{__html: item.get('data')}} id={'richText'}/>
-                        }
-                    })
-                }
-            </div>
+            {
+                msgList.map((item, index) => {
+                    return (
+                        <div key={index}>
+                            {item.payload.text}
+                            <button className="btn" onClick={() => revocation(item)}>撤回</button>
+                        </div>
+                    )
+                })
+            }
         </div>
     )
 };

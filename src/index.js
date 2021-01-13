@@ -5,10 +5,14 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import {Provider} from 'react-redux'; // 定义上下文
 import store from './store'
+import TIM from 'tim-js-sdk';
+import tim from './utils/tim'
 
+window.TIM = TIM;
+window.tim = tim;
 ReactDOM.render(
     <Provider store={store}>
-        <App />
+        <App/>
     </Provider>
     , document.getElementById('root'));
 

@@ -5,6 +5,7 @@
   "dependencies": {
     "antd": "^3.26.2",
     "axios": "^0.19.0",
+    "cos-js-sdk-v5": "^0.5.27",
     "easemob-webrtc": "^3.0.7",
     "easemob-websdk": "^3.0.6",
     "immutable": "^4.0.0-rc.12",
@@ -17,7 +18,8 @@
     "react-scripts": "3.0.0",
     "recorder-core": "^1.0.19120200",
     "redux": "^4.0.4",
-    "reduxsauce": "^1.1.1"
+    "reduxsauce": "^1.1.1",
+    "tim-js-sdk": "^2.7.7"
   },
   "scripts": {
     "start": "react-scripts start --hot --host",
