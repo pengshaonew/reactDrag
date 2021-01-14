@@ -35,7 +35,7 @@ let Chat = () => {
         // event.name - TIM.EVENT.MESSAGE_RECEIVED
         // event.data - 存储 Message 对象的数组 - [Message]
         console.log(Date.now(), e.data);
-        if (e.data[0].type === "TIMTextElem") {
+        if (e.data[0].type === "TIMCustomerElem") {
             let msgListNew = msgList.concat(e.data);
             setMsgList(msgListNew);
         }
@@ -150,6 +150,31 @@ let Chat = () => {
     };
 
     // 撤回
+    /**
+     * 消息类型：data
+     * 描述：description
+     * 自定义：extension
+     * data: {
+     *     txt:文本
+     *     img:图片
+     *     audio:音频
+     *     recall:撤回
+     *     del:删除
+     *     call:@学员
+     *     SUBJECT_LOCK:置顶
+     *     FORBIDDEN_SPEAK:禁言
+     *     SAFFLOWER_MESSAGE:送小花
+     * }
+     * sequence
+     * extension:{
+           content:'消息内容',
+           role:'', // 角色 1或0
+           duration: 时长,
+           nickName: 昵称
+           headUrl：头像
+     * }
+     *
+     * */
     let revocation = () => {
         let message = tim.createCustomMessage({
             to: '1118',
@@ -158,10 +183,9 @@ let Chat = () => {
             // 支持的枚举值：TIM.TYPES.MSG_PRIORITY_HIGH, TIM.TYPES.MSG_PRIORITY_NORMAL（默认）, TIM.TYPES.MSG_PRIORITY_LOW, TIM.TYPES.MSG_PRIORITY_LOWEST
             // priority: TIM.TYPES.MSG_PRIORITY_HIGH,
             payload: {
-                data: 'recall',  // recall txt img audio video @
+                data: 'txt',  // recall txt img audio video @
                 description: '撤回',
                 extension: JSON.stringify({
-                    msgId: curMsg.sequence,
                     content:'',
                 })
             }
@@ -306,7 +330,7 @@ let Chat = () => {
             {
                 msgList.map((item, index) => {
                     return (
-                        <div key={index}>
+                        <div key={index} dangerouslySetInnerHTML={{__html:"<span>AAA</span>"}}>
                             {item.payload.text}
                             <button className="btn" onClick={() => revocation(item)}>撤回</button>
                         </div>
