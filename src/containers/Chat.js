@@ -16,15 +16,17 @@ import Login from "./Login";
 import {fromJS} from "immutable";
 
 let Chat = () => {
+    const dispatch = useDispatch();
     const tim = window.tim;
     const TIM = window.TIM;
     const inputRef = useRef(null);
     const fileRef = useRef(null);
+    const thisState = useSelector(state => state.chat, shallowEqual);
+    const messageList = thisState.get('messageList');
 
     const [btnText, setBtnText] = useState('按住说话');
     const [rec, setRec] = useState(null);
     const [curMsg, setCurMsg] = useState(null);
-    const [msgList, setMsgList] = useState([]);
 
     useEffect(() => {
         tim.on(TIM.EVENT.MESSAGE_RECEIVED, receiveMsg);
@@ -35,9 +37,11 @@ let Chat = () => {
         // event.name - TIM.EVENT.MESSAGE_RECEIVED
         // event.data - 存储 Message 对象的数组 - [Message]
         console.log(Date.now(), e.data);
-        if (e.data[0].type === "TIMCustomerElem") {
-            let msgListNew = msgList.concat(e.data);
-            setMsgList(msgListNew);
+        if (e.data[0].type === "TIMTextElem") {
+            dispatch({
+                type: 'ADD_MESSAGE',
+                data: e.data
+            })
         }
     };
 
@@ -75,6 +79,7 @@ let Chat = () => {
                 text: inputRef.current.innerHTML
             }
         });
+        inputRef.current.innerHTML = '';
         handleSend(message);
     };
 
@@ -120,11 +125,45 @@ let Chat = () => {
         return new File([u8arr], filename, {type: mime});
     };
 
+    let sendCustomerMsg = ()=>{
+        let message = tim.createCustomMessage({
+            to: '1118',
+            conversationType: TIM.TYPES.CONV_GROUP,
+            // 消息优先级，用于群聊（v2.4.2起支持）。如果某个群的消息超过了频率限制，后台会优先下发高优先级的消息，详细请参考 消息优先级与频率控制
+            // 支持的枚举值：TIM.TYPES.MSG_PRIORITY_HIGH, TIM.TYPES.MSG_PRIORITY_NORMAL（默认）, TIM.TYPES.MSG_PRIORITY_LOW, TIM.TYPES.MSG_PRIORITY_LOWEST
+            // priority: TIM.TYPES.MSG_PRIORITY_HIGH,
+            payload: {
+                data: 'txt', // recall txt img audio video @
+                description: '',
+                extension: JSON.stringify({
+                    nickName: 'demo user',
+                    headUrl:'https://chat-profile.oss-cn-hangzhou.aliyuncs.com/7011/upload/tantou/08a08756f7794c1da072e84fa6fc3b6f.jpg',
+                    content: inputRef.current.innerHTML
+                })
+            }
+        });
+        handleSend(message);
+    };
+
     // 发送快捷图片消息或素材
     let sendPrivateUrlImg = function () {
         canvasDrawImg('https://probe.bjmantis.net/msp/front/8888/8888_menu_title_big_logo.png', dataURL => {
-            let file = dataURLtoFile(dataURL, 'logo.png');
-            sendPrivateImg(file);
+            let message = tim.createCustomMessage({
+                to: '1118',
+                conversationType: TIM.TYPES.CONV_GROUP,
+                // 消息优先级，用于群聊（v2.4.2起支持）。如果某个群的消息超过了频率限制，后台会优先下发高优先级的消息，详细请参考 消息优先级与频率控制
+                // 支持的枚举值：TIM.TYPES.MSG_PRIORITY_HIGH, TIM.TYPES.MSG_PRIORITY_NORMAL（默认）, TIM.TYPES.MSG_PRIORITY_LOW, TIM.TYPES.MSG_PRIORITY_LOWEST
+                // priority: TIM.TYPES.MSG_PRIORITY_HIGH,
+                payload: {
+                    data: 'txt',  // recall txt img audio video @
+                    description: '撤回',
+                    extension: JSON.stringify({
+                        content: dataURL,
+                    })
+                }
+            });
+            handleSend(message);
+            // sendPrivateImg(dataURLtoFile(dataURL, 'logo.png'));
         });
     };
     // 发送图片消息
@@ -167,11 +206,13 @@ let Chat = () => {
      * }
      * sequence
      * extension:{
-           content:'消息内容',
+           content:'文本内容',
            role:'', // 角色 1或0
            duration: 时长,
            nickName: 昵称
-           headUrl：头像
+           headUrl：头像,
+           thumbUrl:'缩略图src'
+           url:'原图src或音频src'
      * }
      *
      * */
@@ -186,7 +227,7 @@ let Chat = () => {
                 data: 'txt',  // recall txt img audio video @
                 description: '撤回',
                 extension: JSON.stringify({
-                    content:'',
+                    content: '',
                 })
             }
         });
@@ -282,7 +323,7 @@ let Chat = () => {
     let createGroup = useCallback(() => {
         tim.createGroup({
             name: '少鹏测试群3',
-            type: TIM.TYPES.GRP_AVCHATROOM,
+            type: TIM.TYPES.GRP_MEETING,
             groupID: '1118'
         })
     }, []);
@@ -299,7 +340,7 @@ let Chat = () => {
             <div className="footer">
                 <div ref={inputRef} contentEditable="true" style={{border: '2px solid #ccc', minHeight: 32}}
                      id={'inputChat'}/>
-                <button className="btn" onClick={sendTxtMessage}>发送文本</button>
+                <button className="btn" onClick={sendCustomerMsg}>发送文本</button>
                 {/*<button className="btn" onClick={() => sendAudio()}>发送语音</button>*/}
                 <button className="btn" onClick={sendPrivateUrlImg}>发送图片</button>
                 <button className="btn" onClick={revocation}>撤回</button>
@@ -328,11 +369,10 @@ let Chat = () => {
             <img src="https://www.baidu.com/img/bd_logo1.png" alt="" width={100} onClick={clickImg} id='imgDom'/>
             <div style={{borderBottom: '2px solid #333'}}>消息列表</div>
             {
-                msgList.map((item, index) => {
+                messageList.map((item, index) => {
                     return (
-                        <div key={index} dangerouslySetInnerHTML={{__html:"<span>AAA</span>"}}>
+                        <div key={index}>
                             {item.payload.text}
-                            <button className="btn" onClick={() => revocation(item)}>撤回</button>
                         </div>
                     )
                 })
