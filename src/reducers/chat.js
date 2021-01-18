@@ -24,8 +24,8 @@ export default function chat(state = fromJS({
         case 'GET_HISTORY_MESSAGE':
             return state.set('messageList', fromJS(data));
         case 'ADD_MESSAGE':
-            let messageListNew = [...state.get('messageList').toJS(), ...data];
-            return state.set('messageList', fromJS(messageListNew));
+            let messageListNew = state.get('messageList').concat(data);
+            return state.set('messageList', fromJS(messageListNew.reverse()));
         case 'LOGIN_SUCCESS':
             let loginState = state;
             loginState = loginState.set('username', data.username);

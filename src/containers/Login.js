@@ -27,7 +27,7 @@ let Login = () => {
     }, [username]);
 
     let addGroup = () => {
-        let promise = window.tim.joinGroup({groupID: '1118', type: window.TIM.TYPES.GRP_MEETING});
+        let promise = window.tim.joinGroup({groupID: '137674592681985', type: window.TIM.TYPES.GRP_MEETING});
         promise.then(function (imResponse) {
             switch (imResponse.data.status) {
                 case window.TIM.TYPES.JOIN_STATUS_WAIT_APPROVAL: // 等待管理员同意

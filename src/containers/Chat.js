@@ -26,7 +26,6 @@ let Chat = () => {
 
     const [btnText, setBtnText] = useState('按住说话');
     const [rec, setRec] = useState(null);
-    const [curMsg, setCurMsg] = useState(null);
 
     useEffect(() => {
         tim.on(TIM.EVENT.MESSAGE_RECEIVED, receiveMsg);
@@ -37,12 +36,23 @@ let Chat = () => {
         // event.name - TIM.EVENT.MESSAGE_RECEIVED
         // event.data - 存储 Message 对象的数组 - [Message]
         console.log(Date.now(), e.data);
-        if (e.data[0].type === "TIMTextElem") {
-            dispatch({
-                type: 'ADD_MESSAGE',
-                data: e.data
-            })
-        }
+        addMessage(e.data);
+    };
+    let addMessage = (data) => {
+        let dataNew = [];
+        data.forEach(item => {
+            if (item.type === 'TIMCustomElem') {
+                item.payload.extension = JSON.parse(item.payload.extension);
+                if (/^(txt|img|audio)$/.test(item.payload.data)) {
+                    // 收到消息
+                    dataNew.push(item);
+                }
+            }
+        });
+        dispatch({
+            type: 'ADD_MESSAGE',
+            data: dataNew
+        })
     };
 
     let getGroupList = () => {
@@ -59,7 +69,8 @@ let Chat = () => {
         promise.then(function (imResponse) {
             // 发送成功
             console.log('消息发送成功', imResponse);
-            setCurMsg(imResponse.data.message);
+            addMessage([imResponse.data.message]);
+            inputRef.current.innerHTML = '';
         }).catch(function (imError) {
             // 发送失败
             console.warn('sendMessage error:', imError);
@@ -70,7 +81,7 @@ let Chat = () => {
     let sendTxtMessage = function () {
         // 1. 创建消息实例，接口返回的实例可以上屏
         let message = tim.createTextMessage({
-            to: '1118',
+            to: '137674592681985',
             conversationType: TIM.TYPES.CONV_GROUP,
             // 消息优先级，用于群聊（v2.4.2起支持）。如果某个群的消息超过了频率限制，后台会优先下发高优先级的消息，详细请参考：https://cloud.tencent.com/document/product/269/3663#.E6.B6.88.E6.81.AF.E4.BC.98.E5.85.88.E7.BA.A7.E4.B8.8E.E9.A2.91.E7.8E.87.E6.8E.A7.E5.88.B6)
             // 支持的枚举值：TIM.TYPES.MSG_PRIORITY_HIGH, TIM.TYPES.MSG_PRIORITY_NORMAL（默认）, TIM.TYPES.MSG_PRIORITY_LOW, TIM.TYPES.MSG_PRIORITY_LOWEST
@@ -125,9 +136,9 @@ let Chat = () => {
         return new File([u8arr], filename, {type: mime});
     };
 
-    let sendCustomerMsg = ()=>{
+    let sendCustomerMsg = () => {
         let message = tim.createCustomMessage({
-            to: '1118',
+            to: '137674592681985',
             conversationType: TIM.TYPES.CONV_GROUP,
             // 消息优先级，用于群聊（v2.4.2起支持）。如果某个群的消息超过了频率限制，后台会优先下发高优先级的消息，详细请参考 消息优先级与频率控制
             // 支持的枚举值：TIM.TYPES.MSG_PRIORITY_HIGH, TIM.TYPES.MSG_PRIORITY_NORMAL（默认）, TIM.TYPES.MSG_PRIORITY_LOW, TIM.TYPES.MSG_PRIORITY_LOWEST
@@ -137,7 +148,7 @@ let Chat = () => {
                 description: '',
                 extension: JSON.stringify({
                     nickName: 'demo user',
-                    headUrl:'https://chat-profile.oss-cn-hangzhou.aliyuncs.com/7011/upload/tantou/08a08756f7794c1da072e84fa6fc3b6f.jpg',
+                    headUrl: 'https://chat-profile.oss-cn-hangzhou.aliyuncs.com/7011/upload/tantou/08a08756f7794c1da072e84fa6fc3b6f.jpg',
                     content: inputRef.current.innerHTML
                 })
             }
@@ -149,7 +160,7 @@ let Chat = () => {
     let sendPrivateUrlImg = function () {
         canvasDrawImg('https://probe.bjmantis.net/msp/front/8888/8888_menu_title_big_logo.png', dataURL => {
             let message = tim.createCustomMessage({
-                to: '1118',
+                to: '137674592681985',
                 conversationType: TIM.TYPES.CONV_GROUP,
                 // 消息优先级，用于群聊（v2.4.2起支持）。如果某个群的消息超过了频率限制，后台会优先下发高优先级的消息，详细请参考 消息优先级与频率控制
                 // 支持的枚举值：TIM.TYPES.MSG_PRIORITY_HIGH, TIM.TYPES.MSG_PRIORITY_NORMAL（默认）, TIM.TYPES.MSG_PRIORITY_LOW, TIM.TYPES.MSG_PRIORITY_LOWEST
@@ -169,7 +180,7 @@ let Chat = () => {
     // 发送图片消息
     let sendPrivateImg = function (file) {
         let message = tim.createImageMessage({
-            to: '1118',
+            to: '137674592681985',
             conversationType: TIM.TYPES.CONV_GROUP,
             // 消息优先级，用于群聊（v2.4.2起支持）。如果某个群的消息超过了频率限制，后台会优先下发高优先级的消息，详细请参考 消息优先级与频率控制
             // 支持的枚举值：TIM.TYPES.MSG_PRIORITY_HIGH, TIM.TYPES.MSG_PRIORITY_NORMAL（默认）, TIM.TYPES.MSG_PRIORITY_LOW, TIM.TYPES.MSG_PRIORITY_LOWEST
@@ -218,7 +229,7 @@ let Chat = () => {
      * */
     let revocation = () => {
         let message = tim.createCustomMessage({
-            to: '1118',
+            to: '137674592681985',
             conversationType: TIM.TYPES.CONV_GROUP,
             // 消息优先级，用于群聊（v2.4.2起支持）。如果某个群的消息超过了频率限制，后台会优先下发高优先级的消息，详细请参考 消息优先级与频率控制
             // 支持的枚举值：TIM.TYPES.MSG_PRIORITY_HIGH, TIM.TYPES.MSG_PRIORITY_NORMAL（默认）, TIM.TYPES.MSG_PRIORITY_LOW, TIM.TYPES.MSG_PRIORITY_LOWEST
@@ -322,9 +333,9 @@ let Chat = () => {
 
     let createGroup = useCallback(() => {
         tim.createGroup({
-            name: '少鹏测试群3',
+            name: '少鹏测试群6',
             type: TIM.TYPES.GRP_MEETING,
-            groupID: '1118'
+            groupID: '137674592681985'
         })
     }, []);
 
@@ -346,7 +357,6 @@ let Chat = () => {
                 <button className="btn" onClick={revocation}>撤回</button>
                 <input type="file" name="filename" ref={fileRef} onChange={fileChange}/>
                 {/*<span onClick={openPhoto}>打开文件</span>*/}
-                {/*<button className="send" onClick={createGroup}>创建群组</button>*/}
                 <div
                     onClick={onTouchStart}
                     /*onTouchStart={onTouchStart}
@@ -372,7 +382,7 @@ let Chat = () => {
                 messageList.map((item, index) => {
                     return (
                         <div key={index}>
-                            {item.payload.text}
+                            {item.payload.extension.content}
                         </div>
                     )
                 })
