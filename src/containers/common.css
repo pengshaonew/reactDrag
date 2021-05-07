@@ -1,0 +1,17 @@
+.navBox{
+    display: flex;
+    margin: 5px;
+}
+.nav {
+    cursor: pointer;
+    text-align: left;
+    padding:8px;
+    margin-bottom: 20px;
+    font-size: 20px;
+}
+
+.navActive{
+    background: #01acac;
+    color:#fff;
+    border-radius: 3px;
+}

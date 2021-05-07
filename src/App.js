@@ -1,14 +1,19 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
-import Demo from "./Demo";
+import Main from "./containers/Main";
+import {Route, Router} from 'react-router-dom';
+import { createBrowserHistory, createHashHistory } from '../node_modules/history';
+
+const history = createBrowserHistory();
 
 function App() {
-  return (
-    <div className="App">
-      <Demo/>
-    </div>
-  );
+    return (
+        <div className="App">
+            <Router history={history}>
+                <Route path={'/'} render={props => <Main {...props}/>}/>
+            </Router>
+        </div>
+    );
 }
 
 export default App;
