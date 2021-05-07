@@ -6,7 +6,8 @@
     "axios": "^0.19.0",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
-    "react-scripts": "3.0.0"
+    "react-scripts": "3.0.0",
+    "recorder-core": "^1.0.19120200"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -28,5 +29,6 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  }
+  },
+  "proxy": "http://mspmsp.bjmantis.net/"
 }
