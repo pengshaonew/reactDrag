@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="e1aff145-1416-44e1-be42-a374912ea9b1" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/containers/Home/Home.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/containers/Main.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/containers/about/About.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/containers/common.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="e1aff145-1416-44e1-be42-a374912ea9b1" name="Default Changelist" comment="聊窗接线">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/public/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/App.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/App.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Demo.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/Demo.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/demo.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/demo.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/containers/Main.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/Main.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/containers/about/About.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/containers/about/About.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,6 +119,14 @@
       <updated>1566976673194</updated>
       <workItem from="1566976674596" duration="3364000" />
     </task>
+    <task id="LOCAL-00001" summary="聊窗接线">
+      <created>1620389327659</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1620389327659</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
@@ -172,7 +173,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="录音" />
-    <option name="LAST_COMMIT_MESSAGE" value="录音" />
+    <MESSAGE value="聊窗接线" />
+    <option name="LAST_COMMIT_MESSAGE" value="聊窗接线" />
   </component>
   <component name="editorHistoryManager">
     <entry file="file://$PROJECT_DIR$/public/manifest.json">
