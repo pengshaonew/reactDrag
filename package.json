@@ -9,7 +9,7 @@
     "easemob-webrtc": "^3.0.7",
     "easemob-websdk": "^3.0.6",
     "immutable": "^4.0.0-rc.12",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.21",
     "loglevel-plugin-prefix": "^0.8.4",
     "react": "^16.8.6",
     "react-dom": "^16.8.6",
